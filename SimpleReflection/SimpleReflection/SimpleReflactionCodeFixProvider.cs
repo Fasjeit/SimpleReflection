@@ -19,7 +19,7 @@ namespace SimpleReflection
     public class SimpleReflactionCodeFixProvider : CodeFixProvider
     {
         public sealed override ImmutableArray<string> FixableDiagnosticIds
-            => ImmutableArray.Create(SimpleReflectionAnalyzer.SimpleReflectionIsNotReady);
+            => ImmutableArray.Create(SimpleReflectionAnalyzer.SimpleReflectionIsNotReady, SimpleReflectionAnalyzer.SimpleReflectionUpdate);
 
         public sealed override FixAllProvider GetFixAllProvider()
         {
@@ -31,8 +31,8 @@ namespace SimpleReflection
             var diagnostic = context.Diagnostics.First();
 
             var title = diagnostic.Severity == DiagnosticSeverity.Error
-                ? "Generate TypePack formatter"
-                : "Recreate TypePack formatter";
+                ? "Generate simple reflection"
+                : "Recreate simple reflection";
 
             context.RegisterCodeFix(
                 CodeAction.Create(
@@ -54,7 +54,7 @@ namespace SimpleReflection
 
             var symbolName = symbol.ToDisplayString();
             var source = this.BuildSimpleReflection(symbol);
-            var fileName = $"{typeName.Replace(".", "")}SimpleReflection.cs";
+            var fileName = $"{symbol.GetSimpleReflectionExtentionTypeName()}.cs";
 
             if (context.Document.Project.Documents.FirstOrDefault(o => o.Name == fileName) is Document document)
             {
@@ -72,22 +72,23 @@ namespace SimpleReflection
         }
 
         private string BuildSimpleReflection(INamedTypeSymbol symbol) => $@"
+    using System;
     using System.Collections.Generic;
 
     // Simple reflection for {symbol.ToDisplayString()}
-    public static class {symbol.ToDisplayString().Replace(".", "")}Extentions
+    public static class {symbol.GetSimpleReflectionExtentionTypeName()}
     {{
-        private static Dictionary<string, string> properties = new Dictionary<string, string>
+        private static Dictionary<string, Type> properties = new Dictionary<string, Type>
         {{
             { symbol
                 .GetAllMembers()
                 .OfType<IPropertySymbol>()
                 .Where(o => (o.DeclaredAccessibility & Accessibility.Public) > 0)
-                .Select(o => $@"{{ ""{o.Name}"", ""{o.Type.ToDisplayString()}""}},")
+                .Select(o => $@"{{ ""{o.Name}"", typeof({o.Type.ToDisplayString()})}},")
                 .JoinWithNewLine() }
         }};
 
-        public static Dictionary<string, string> GetBakedType(this global::{symbol.ToDisplayString()} value)
+        public static Dictionary<string, Type> GetBakedType(this global::{symbol.ToDisplayString()} value)
         {{
             return properties;
         }}

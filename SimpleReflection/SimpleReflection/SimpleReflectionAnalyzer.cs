@@ -1,6 +1,7 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
+using SimpleReflection.Utils;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -13,6 +14,7 @@ namespace SimpleReflection
     public class SimpleReflectionAnalyzer : DiagnosticAnalyzer
     {
         public const string SimpleReflectionIsNotReady = "SimpleReflectionIsNotReady";
+        public const string SimpleReflectionUpdate = "SimpleReflectionUpdate";
 
         public static DiagnosticDescriptor SimpleReflectionIsNotReadyDescriptor = new DiagnosticDescriptor(
                    SimpleReflectionIsNotReady,
@@ -23,8 +25,17 @@ namespace SimpleReflection
                    isEnabledByDefault: true,
                    "Simple reflection is not ready.");
 
+        public static DiagnosticDescriptor SimpleReflectionUpdateDescriptor = new DiagnosticDescriptor(
+                SimpleReflectionUpdate,
+                "Simple reflection update.",
+                "Simple reflection update.",
+                "Codegen",
+                DiagnosticSeverity.Info,
+                isEnabledByDefault: true,
+                "Simple reflection update.");
+
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics
-            => ImmutableArray.Create(SimpleReflectionIsNotReadyDescriptor);
+            => ImmutableArray.Create(SimpleReflectionIsNotReadyDescriptor, SimpleReflectionUpdateDescriptor);
 
         public override void Initialize(AnalysisContext context)
         {
@@ -39,11 +50,25 @@ namespace SimpleReflection
                 methodName.Identifier.ValueText == "GetBakedType"
                 )
             {
-                var typeInfo = context.Compilation
-                    .GetSemanticModel(invocation.SyntaxTree)
+                var semanticModel = context.Compilation
+                    .GetSemanticModel(invocation.SyntaxTree);
+
+
+                var typeInfo = semanticModel
                     .GetSpeculativeTypeInfo(memberAccess.Expression.SpanStart, memberAccess.Expression, SpeculativeBindingOption.BindAsExpression);
 
                 var diagnosticProperties = ImmutableDictionary<string, string>.Empty.Add("type", typeInfo.Type.ToDisplayString());
+                if (context.Compilation.GetTypeByMetadataName(typeInfo.Type.GetSimpleReflectionExtentionTypeName()) is INamedTypeSymbol extention)
+                {
+                    var updateDiagnostic = Diagnostic.Create(SimpleReflectionUpdateDescriptor,
+                       methodName.GetLocation(),
+                       diagnosticProperties);
+
+                    context.ReportDiagnostic(updateDiagnostic);
+
+                    return;
+                }
+
                 var diagnostic = Diagnostic.Create(SimpleReflectionIsNotReadyDescriptor,
                    methodName.GetLocation(),
                    diagnosticProperties);
