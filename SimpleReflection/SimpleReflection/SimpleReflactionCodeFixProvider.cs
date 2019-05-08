@@ -1,6 +1,8 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.Formatting;
 using Microsoft.CodeAnalysis.Text;
 using SimpleReflection.Utils;
 using System;
@@ -53,7 +55,8 @@ namespace SimpleReflection
             var projectPath = Path.GetDirectoryName(context.Document.Project.FilePath);
 
             var symbolName = symbol.ToDisplayString();
-            var source = this.BuildSimpleReflection(symbol);
+            var rawSource = this.BuildSimpleReflection(symbol);
+            var source = Formatter.Format(SyntaxFactory.ParseSyntaxTree(rawSource).GetRoot(), new AdhocWorkspace()).ToFullString();
             var fileName = $"{symbol.GetSimpleReflectionExtentionTypeName()}.cs";
 
             if (context.Document.Project.Documents.FirstOrDefault(o => o.Name == fileName) is Document document)
@@ -61,9 +64,7 @@ namespace SimpleReflection
                 return document.WithText(SourceText.From(source));
             }
 
-            var parts = symbolName.Split('.');
-            var namespaces = parts.Take(parts.Length - 2);
-            var folders = new[] { "SimpeReflection" }.Concat(namespaces).ToArray();
+            var folders = new[] { "SimpeReflection" };
 
             return currentDocument.Project
                         .AddDocument(fileName, source)
