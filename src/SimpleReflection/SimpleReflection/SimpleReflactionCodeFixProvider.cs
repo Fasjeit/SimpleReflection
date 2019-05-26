@@ -81,12 +81,12 @@ namespace SimpleReflection
     {{
         private static Dictionary<string, Type> properties = new Dictionary<string, Type>
         {{
-            { symbol
-                .GetAllMembers()
-                .OfType<IPropertySymbol>()
-                .Where(o => (o.DeclaredAccessibility & Accessibility.Public) > 0)
-                .Select(o => $@"{{ ""{o.Name}"", typeof({o.Type.ToDisplayString()})}},")
-                .JoinWithNewLine() }
+{ symbol
+    .GetAllMembers()
+    .OfType<IPropertySymbol>()
+    .Where(o => (o.DeclaredAccessibility & Accessibility.Public) > 0)
+    .Select(o => $@"            {{ ""{o.Name}"", typeof({o.Type.ToDisplayString()})}},")
+    .JoinWithNewLine() }
         }};
 
         public static Dictionary<string, Type> GetBakedType(this global::{symbol.ToDisplayString()} value)
