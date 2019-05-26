@@ -17,8 +17,8 @@ using System.Threading.Tasks;
 
 namespace SimpleReflection
 {
-    [ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(SimpleReflactionCodeFixProvider)), Shared]
-    public class SimpleReflactionCodeFixProvider : CodeFixProvider
+    [ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(SimpleReflectionCodeFixProvider)), Shared]
+    public class SimpleReflectionCodeFixProvider : CodeFixProvider
     {
         public sealed override ImmutableArray<string> FixableDiagnosticIds
             => ImmutableArray.Create(SimpleReflectionAnalyzer.SimpleReflectionIsNotReady, SimpleReflectionAnalyzer.SimpleReflectionUpdate);
