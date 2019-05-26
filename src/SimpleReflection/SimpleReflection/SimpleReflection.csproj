@@ -9,7 +9,7 @@
   <PropertyGroup>
     <PackageId>SimpleReflection</PackageId>
     <Authors>Stanislav Silin</Authors>
-    <Version>1.0.2.0</Version>
+    <Version>1.0.3.0</Version>
     <PackageLicenseUrl></PackageLicenseUrl>
     <PackageProjectUrl>https://github.com/byme8/SimpleReflection</PackageProjectUrl>
     <PackageIconUrl></PackageIconUrl>
@@ -20,7 +20,7 @@
     <Copyright>Copyright</Copyright>
     <PackageTags>analyzers, codegeneration, roslyn</PackageTags>
     <NoPackageAnalysis>true</NoPackageAnalysis>
-    <Version>1.0.2.0</Version>
+    <Version>1.0.3.0</Version>
     <Company />
     <LangVersion>latest</LangVersion>
     <RepositoryType>git</RepositoryType>
